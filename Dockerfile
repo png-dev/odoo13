@@ -1,9 +1,8 @@
 FROM debian:buster-slim
-MAINTAINER png
+MAINTAINER dev.vn.png@gmail.com
 
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
-# Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
 
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
@@ -54,8 +53,10 @@ RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 13.0
-ARG ODOO_RELEASE=20200830
+ARG ODOO_RELEASE=20200826
+ARG ODOO_SHA=9fe7d55e64867d177519e99cc45f9ecfeb3746a3
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
+        && echo "${ODOO_SHA} odoo.deb" | sha1sum -c - \
         && apt-get update \
         && apt-get -y install --no-install-recommends ./odoo.deb \
         && rm -rf /var/lib/apt/lists/* odoo.deb
@@ -77,7 +78,6 @@ EXPOSE 8069 8071 8072
 ENV ODOO_RC /etc/odoo/odoo.conf
 
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
-COPY ./addons/ /mnt/extra-addons/
 
 # Set default user when running the container
 USER odoo
